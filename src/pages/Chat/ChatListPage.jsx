@@ -2,6 +2,7 @@ import {useState} from 'react';
 import {Box, IconButton, useToast} from "@chakra-ui/react";
 import {ChatIcon} from "@chakra-ui/icons";
 import MerchantListModal from "../../components/merchant/MerchantListModal.jsx";
+import * as customerService from "../../services/customer";
 import * as merchantService from "../../services/merchant";
 
 const ChatListPage = () => {
@@ -31,7 +32,7 @@ const ChatListPage = () => {
 
         setTimeout(() => {
             setIsLoadMerchants(false);
-        }, 800);
+        }, 500);
     }
 
     const toggleModalMerchant = () => {
@@ -46,7 +47,29 @@ const ChatListPage = () => {
     }
 
     const startChat = async (merchant) => {
-        console.log(merchant);
+        const resCustomerSendBird = await customerService.createSendBirdUser();
+        if (!resCustomerSendBird.isSuccess) {
+            toast({
+                title: 'Error',
+                description: resCustomerSendBird.message,
+                status: 'error',
+                duration: 3000,
+                isClosable: true,
+                position: 'bottom',
+            });
+        }
+
+        const resMerchantSendBird = await merchantService.createSendBirdUser(merchant._id);
+        if (!resMerchantSendBird.isSuccess) {
+            toast({
+                title: 'Error',
+                description: resMerchantSendBird.message,
+                status: 'error',
+                duration: 3000,
+                isClosable: true,
+                position: 'bottom',
+            });
+        }
     }
 
     return (
