@@ -80,7 +80,7 @@ const RegisterPage = () => {
                     <CardBody>
                         <Flex flexDirection='column' w='100%'>
                             <FormControl mb={4}>
-                                <FormLabel>Store Name</FormLabel>
+                                <FormLabel>Name</FormLabel>
                                 <Input
                                     name='name'
                                     colorScheme='primary'

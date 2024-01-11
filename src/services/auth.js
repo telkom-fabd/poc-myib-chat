@@ -4,7 +4,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 const login = async (body) => {
     try {
-        const url = `${API_URL}/api/v1/auth/login-merchant`;
+        const url = `${API_URL}/api/v1/auth/login-customer`;
         const response = await axios.post(url, body);
         if (response.data.data && response.data.data.access_token) {
             return {
@@ -28,7 +28,7 @@ const login = async (body) => {
 
 const register = async (body) => {
     try {
-        const url = `${API_URL}/api/v1/auth/register-merchant`;
+        const url = `${API_URL}/api/v1/auth/register-customer`;
         const response = await axios.post(url, body);
         if (response.data.data && response.data.data.access_token) {
             return {

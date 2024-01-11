@@ -63,7 +63,7 @@ const PrivateLayout = ({children}) => {
                                     fontWeight='bold'
                                     fontSize='md'
                                 >
-                                    Partner MyIB
+                                    MyIndibiz
                                 </Text>
                                 <Menu>
                                     <MenuButton>
