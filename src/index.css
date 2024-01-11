@@ -51,9 +51,8 @@
 }
 
 .private-content {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: block;
+  position: relative;
   width: 100%;
-  height: calc(100vh - 60px);
+  min-height: calc(100vh - 60px);
 }
