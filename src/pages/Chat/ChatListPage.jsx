@@ -1,17 +1,78 @@
-import {useState} from 'react';
-import {Box, IconButton, useToast} from "@chakra-ui/react";
+import {useEffect, useState} from 'react';
+import {Box, Flex, IconButton, useToast} from "@chakra-ui/react";
 import {ChatIcon} from "@chakra-ui/icons";
+import SendbirdChat from '@sendbird/chat'
+import {GroupChannelFilter, GroupChannelListOrder, GroupChannelModule} from "@sendbird/chat/groupChannel";
 import MerchantListModal from "../../components/merchant/MerchantListModal.jsx";
+import ChatItem from "../../components/chat/ChatItem.jsx";
+
 import * as customerService from "../../services/customer";
 import * as merchantService from "../../services/merchant";
+import * as cookie from "../../utils/cookie";
 
 const ChatListPage = () => {
     const toast = useToast();
+    const sb = SendbirdChat.init({
+        appId: 'CFEC9256-8DDF-4D86-BD78-8106455347BC',
+        modules: [
+            new GroupChannelModule(),
+        ],
+    });
+
+    const [chats, setChats] = useState([]);
     const [isLoadMerchants, setIsLoadMerchants] = useState(false);
     const [merchants, setMerchants] = useState([]);
     const [modalMerchant, setModalMerchant] = useState({
         isOpen: false,
     });
+
+    useEffect(() => {
+        const sendbird = cookie.getSendbird();
+        if (sendbird) {
+            connectSendbird(sendbird.user_id);
+        } else {
+            getSendbirdFromCustomer();
+        }
+    }, []);
+
+    const getSendbirdFromCustomer = async () => {
+        const resultCustomer = await customerService.getCustomer();
+        if (resultCustomer.isSuccess && resultCustomer.data.sendbird) {
+            cookie.saveSendbird(resultCustomer.data.sendbird);
+            connectSendbird(resultCustomer.data.sendbird.user_id);
+        }
+    }
+
+    const connectSendbird = async (userId) => {
+        try {
+            const user = await sb.connect(userId);
+            console.log("sendbird user :", user);
+
+            const groupChannelFilter = new GroupChannelFilter();
+            groupChannelFilter.includeEmpty = true;
+            const params = {
+                filter: groupChannelFilter,
+                order: GroupChannelListOrder.LATEST_LAST_MESSAGE,
+            };
+            const channelCollection = sb.groupChannel.createGroupChannelCollection(params);
+            const channels = await channelCollection.loadMore();
+            console.log("channels :", channels);
+
+            const chats = channels.map((channel) => {
+                const chat = {
+                    id: channel._iid,
+                    avatar: channel.coverUrl,
+                    name: channel.lastMessage.sender.nickname,
+                    message: channel.lastMessage.message,
+                    createdAt: channel.lastMessage.createdAt,
+                };
+                return chat;
+            })
+            setChats(chats);
+        } catch (err) {
+            // Handle error.
+        }
+    }
 
     const getMerchants = async () => {
         setIsLoadMerchants(true);
@@ -100,6 +161,24 @@ const ChatListPage = () => {
                     startChat(merchant);
                 }}
             />
+
+            <Flex
+                flexDir='column'
+                justifyContent='start'
+                alignItems='start'
+                h='500px'
+                overflow='auto'
+            >
+                {
+                    chats.map((chat, index) => (
+                        <ChatItem
+                            key={`chat-${index}`}
+                            chat={chat}
+                            onClick={() => {}}
+                        />
+                    ))
+                }
+            </Flex>
         </>
     );
 };
