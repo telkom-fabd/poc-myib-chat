@@ -17,11 +17,15 @@ const ChatPage = () => {
     });
     const [chatMessages, setChatMessages] = useState([]);
 
-    useEffect(() => {
-        initSendbird(channelUrl);
-    }, []);
-
     const addSendbirdMessages = (msgs = []) => {
+        if (msgs.length === 0) return;
+
+        // sort by createdAt
+        msgs.sort((a, b) => {
+            return a.createdAt - b.createdAt;
+        })
+
+        // transform
         for (let i = 0; i < msgs.length; i++) {
             const newMsg = {
                 id: msgs[i].messageId,
@@ -96,6 +100,11 @@ const ChatPage = () => {
             console.log("err :", err);
         }
     }
+
+    useEffect(() => {
+        console.log("init:");
+        initSendbird(channelUrl);
+    }, []);
 
     const sendMessage = async (messageContent) => {
         try {
