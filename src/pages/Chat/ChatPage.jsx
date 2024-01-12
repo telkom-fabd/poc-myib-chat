@@ -3,10 +3,10 @@ import {useParams} from "react-router-dom";
 import {Flex} from "@chakra-ui/react";
 import SendbirdChat from '@sendbird/chat'
 import {GroupChannelModule} from "@sendbird/chat/groupChannel";
-import ChatMessage from "../../components/chat/ChatMessage.jsx";
-
-import * as cookie from "../../utils/cookie";
 import ChatHeader from "../../components/chat/ChatHeader.jsx";
+import ChatMessageList from "../../components/chat/ChatMessageList.jsx";
+import ChatForm from "../../components/chat/ChatForm.jsx";
+import * as cookie from "../../utils/cookie";
 
 const ChatPage = () => {
     const {channelUrl} = useParams()
@@ -97,6 +97,34 @@ const ChatPage = () => {
         }
     }
 
+    const sendMessage = async (messageContent) => {
+        try {
+            // get sendbird from cookie
+            const sendbird = cookie.getSendbird();
+
+            // connect sendbird
+            const sb = SendbirdChat.init({
+                appId: 'CFEC9256-8DDF-4D86-BD78-8106455347BC',
+                modules: [
+                    new GroupChannelModule(),
+                ],
+            });
+            await sb.connect(sendbird.user_id);
+
+            // get channel
+            const channel = await sb.groupChannel.getChannel(channelUrl);
+
+            // send message
+            const params = {
+                message: messageContent,
+            };
+            channel.sendUserMessage(params);
+        } catch (err) {
+            // Handle error.
+            console.log("err :", err);
+        }
+    }
+
     return (
         <>
             <Flex
@@ -106,33 +134,8 @@ const ChatPage = () => {
                 h='calc(100vh - 60px)'
             >
                 <ChatHeader sender={sender}/>
-                <Flex
-                    flexDir='column'
-                    justifyContent='start'
-                    alignItems='start'
-                    w='100%'
-                    h='calc(100vh - 200px)'
-                    overflow='auto'
-                >
-                    {
-                        chatMessages.map((msg, index) => (
-                            <ChatMessage
-                                key={index}
-                                sendbirdUserId={sendBirdUserId}
-                                message={msg}
-                            />
-                        ))
-                    }
-                </Flex>
-                <Flex
-                    flexDir='row'
-                    w='100%'
-                    h='80px'
-                    justifyContent='start'
-                    alignItems='center'
-                    bgColor='gray.100'
-                >
-                </Flex>
+                <ChatMessageList sendbirdUserId={sendBirdUserId} messages={chatMessages}/>
+                <ChatForm onSendMessage={sendMessage}/>
             </Flex>
         </>
     )
