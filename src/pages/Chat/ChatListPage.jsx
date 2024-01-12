@@ -1,4 +1,5 @@
 import {useEffect, useState} from 'react';
+import {useNavigate} from "react-router-dom";
 import {Box, Flex, IconButton, useToast} from "@chakra-ui/react";
 import {ChatIcon} from "@chakra-ui/icons";
 import SendbirdChat from '@sendbird/chat'
@@ -11,6 +12,7 @@ import * as merchantService from "../../services/merchant";
 import * as cookie from "../../utils/cookie";
 
 const ChatListPage = () => {
+    const navigate = useNavigate();
     const toast = useToast();
     const sb = SendbirdChat.init({
         appId: 'CFEC9256-8DDF-4D86-BD78-8106455347BC',
@@ -61,6 +63,7 @@ const ChatListPage = () => {
             const chats = channels.map((channel) => {
                 const chat = {
                     id: channel._iid,
+                    url: channel._url,
                     avatar: channel.coverUrl,
                     name: channel.lastMessage.sender.nickname,
                     message: channel.lastMessage.message,
@@ -174,7 +177,9 @@ const ChatListPage = () => {
                         <ChatItem
                             key={`chat-${index}`}
                             chat={chat}
-                            onClick={() => {}}
+                            onClick={() => {
+                                navigate(`/chat/${chat.url}`);
+                            }}
                         />
                     ))
                 }
