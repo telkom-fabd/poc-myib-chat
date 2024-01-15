@@ -9,7 +9,7 @@ import ChatItem from "../../components/chat/ChatItem.jsx";
 
 import * as customerService from "../../services/customer";
 import * as merchantService from "../../services/merchant";
-import * as cookie from "../../utils/cookie";
+import * as cookie from "../../utils/cookie.js";
 
 const ChatListPage = () => {
     const navigate = useNavigate();
@@ -21,6 +21,8 @@ const ChatListPage = () => {
         ],
     });
 
+    const [userId, setUserId] = useState('');
+    const [sendBirdUser, setSendBirdUser] = useState(null);
     const [chats, setChats] = useState([]);
     const [isLoadMerchants, setIsLoadMerchants] = useState(false);
     const [merchants, setMerchants] = useState([]);
@@ -29,26 +31,29 @@ const ChatListPage = () => {
     });
 
     useEffect(() => {
-        const sendbird = cookie.getSendbird();
-        if (sendbird) {
-            connectSendbird(sendbird.user_id);
-        } else {
-            getSendbirdFromCustomer();
-        }
+        const user = cookie.getUser();
+        setUserId(user._id);
+        getSendBirdUser();
     }, []);
 
-    const getSendbirdFromCustomer = async () => {
-        const resultCustomer = await customerService.getCustomer();
-        if (resultCustomer.isSuccess && resultCustomer.data.sendbird) {
-            cookie.saveSendbird(resultCustomer.data.sendbird);
-            connectSendbird(resultCustomer.data.sendbird.user_id);
+    const getSendBirdUser = async () => {
+        const result = await customerService.getSendBirdUser();
+        if (result.isSuccess && result.data && result.data.user) {
+            console.log("getSendBirdUser :", result.data.user);
+            setSendBirdUser(result.data.user);
         }
     }
 
+    useEffect(() => {
+        if (sendBirdUser && sendBirdUser.user_id) {
+            console.log("sendBirdUser :", sendBirdUser);
+            connectSendbird(sendBirdUser.user_id);
+        }
+    }, [sendBirdUser]);
+
     const connectSendbird = async (userId) => {
         try {
-            const user = await sb.connect(userId);
-            console.log("sendbird user :", user);
+            await sb.connect(userId);
 
             const groupChannelFilter = new GroupChannelFilter();
             groupChannelFilter.includeEmpty = true;
@@ -60,19 +65,31 @@ const ChatListPage = () => {
             const channels = await channelCollection.loadMore();
             console.log("channels :", channels);
 
-            const chats = channels.map((channel) => {
-                const chat = {
-                    id: channel._iid,
+            const chatList = channels.map((channel) => {
+                let members = [];
+                if (channel.members && channel.members.length > 0) {
+                    members = channel.members.map((member) => {
+                        return {
+                            userId: member.userId,
+                            avatar: member.plainProfileUrl,
+                            name: member.nickname,
+                            isOnline: member.connectionStatus === 'online',
+                        };
+                    });
+                }
+
+                return {
                     url: channel._url,
-                    avatar: channel.coverUrl,
-                    name: channel.lastMessage.sender.nickname,
-                    message: channel.lastMessage.message,
-                    createdAt: channel.lastMessage.createdAt,
+                    members: members,
+                    lastMessage: channel.lastMessage,
+                    createdAt: channel.createdAt,
                 };
-                return chat;
             })
-            setChats(chats);
+
+            console.log("chatList :", chatList);
+            setChats(chatList);
         } catch (err) {
+            console.log("connectSendbird error :", err);
             // Handle error.
         }
     }
@@ -134,6 +151,16 @@ const ChatListPage = () => {
                 position: 'bottom',
             });
         }
+
+        const customerSendBirdUser = resCustomerSendBird.data.sendbird_user;
+        console.log("resCustomerSendBird :", resCustomerSendBird);
+        const merchantSendBirdUser = resMerchantSendBird.data.sendbird_user;
+        const newChannelParams = {
+            invitedUserIds: [customerSendBirdUser.user_id, merchantSendBirdUser.user_id],
+        };
+        const channel = await sb.groupChannel.createChannel(newChannelParams);
+        console.log(channel);
+        navigate(`/chat/${channel.url}`);
     }
 
     return (
@@ -176,6 +203,7 @@ const ChatListPage = () => {
                     chats.map((chat, index) => (
                         <ChatItem
                             key={`chat-${index}`}
+                            userId={userId}
                             chat={chat}
                             onClick={() => {
                                 navigate(`/chat/${chat.url}`);

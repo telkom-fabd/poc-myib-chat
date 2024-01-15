@@ -32,7 +32,7 @@ const getList = async () => {
 
 const createSendBirdUser = async (id) => {
     try {
-        const url = `${API_URL}/api/v1/merchants/${id}/create-sendbird-user`;
+        const url = `${API_URL}/api/v1/merchants/${id}/sendbird-user`;
         const headers = {
             Authorization: `Bearer ${cookie.getToken()}`,
         }
