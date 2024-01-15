@@ -10,61 +10,55 @@ import * as cookie from "../../utils/cookie";
 
 const ChatPage = () => {
     const {channelUrl} = useParams()
-    const [sendBirdUserId, setSendBirdUserId] = useState(null);
+
+    const sb = SendbirdChat.init({
+        appId: 'CFEC9256-8DDF-4D86-BD78-8106455347BC',
+        modules: [
+            new GroupChannelModule(),
+        ],
+    });
+
+    const [userId, setUserId] = useState('');
+    const [sendBirdChannel, setSendBirdChannel] = useState(null);
     const [sender, setSender] = useState({
         avatar: '',
         name: '',
     });
     const [chatMessages, setChatMessages] = useState([]);
 
-    const addSendbirdMessages = (msgs = []) => {
-        if (msgs.length === 0) return;
-
-        // sort by createdAt
-        msgs.sort((a, b) => {
-            return a.createdAt - b.createdAt;
-        })
-
-        // transform
-        for (let i = 0; i < msgs.length; i++) {
-            const newMsg = {
-                id: msgs[i].messageId,
-                content: msgs[i].message,
-                sender: {
-                    id: msgs[i].sender.userId,
-                    avatar: msgs[i].sender.plainProfileUrl,
-                    name: msgs[i].sender.nickname,
-                },
-                sendingStatus: msgs[i].sendingStatus,
-                createdAt: msgs[i].createdAt,
-            };
-            setChatMessages((prevChats) => {
-                return [...prevChats, newMsg];
-            });
-        }
-    }
+    useEffect(() => {
+        console.log("init:");
+        initSendbird(channelUrl);
+    }, []);
 
     const initSendbird = async (url) => {
         try {
-            // get sendbird from cookie
-            const sendbird = cookie.getSendbird();
-            setSendBirdUserId(sendbird.user_id);
+            const user = cookie.getUser();
+            setUserId(user._id);
 
             // connect sendbird
-            const sb = SendbirdChat.init({
-                appId: 'CFEC9256-8DDF-4D86-BD78-8106455347BC',
-                modules: [
-                    new GroupChannelModule(),
-                ],
-            });
-            await sb.connect(sendbird.user_id);
+            await sb.connect(user._id);
 
             // get channel
             const channel = await sb.groupChannel.getChannel(url);
+            console.log("channel :", channel);
+            setSendBirdChannel(channel);
+
+            // set sender
+            let senderName = '';
+            let senderAvatar = '';
+            if (channel.members && channel.members.length > 0) {
+                for (let i = 0; i < channel.members.length; i++) {
+                    if (channel.members[i].userId !== user._id) {
+                        senderName = channel.members[i].nickname;
+                        senderAvatar = channel.members[i].plainProfileUrl;
+                        break;
+                    }
+                }
+            }
             setSender({
-                id: channel._iid,
-                avatar: channel.coverUrl,
-                name: channel.lastMessage.sender.nickname,
+                avatar: senderAvatar,
+                name: senderName,
             })
 
             // get messages
@@ -101,33 +95,40 @@ const ChatPage = () => {
         }
     }
 
-    useEffect(() => {
-        console.log("init:");
-        initSendbird(channelUrl);
-    }, []);
+    const addSendbirdMessages = (msgs = []) => {
+        if (msgs.length === 0) return;
+
+        // sort by createdAt
+        msgs.sort((a, b) => {
+            return a.createdAt - b.createdAt;
+        })
+
+        // transform
+        for (let i = 0; i < msgs.length; i++) {
+            const newMsg = {
+                id: msgs[i].messageId,
+                content: msgs[i].message,
+                sender: {
+                    id: msgs[i].sender.userId,
+                    avatar: msgs[i].sender.plainProfileUrl,
+                    name: msgs[i].sender.nickname,
+                },
+                sendingStatus: msgs[i].sendingStatus,
+                createdAt: msgs[i].createdAt,
+            };
+            setChatMessages((prevChats) => {
+                return [...prevChats, newMsg];
+            });
+        }
+    }
 
     const sendMessage = async (messageContent) => {
         try {
-            // get sendbird from cookie
-            const sendbird = cookie.getSendbird();
-
-            // connect sendbird
-            const sb = SendbirdChat.init({
-                appId: 'CFEC9256-8DDF-4D86-BD78-8106455347BC',
-                modules: [
-                    new GroupChannelModule(),
-                ],
-            });
-            await sb.connect(sendbird.user_id);
-
-            // get channel
-            const channel = await sb.groupChannel.getChannel(channelUrl);
-
             // send message
             const params = {
                 message: messageContent,
             };
-            channel.sendUserMessage(params);
+            sendBirdChannel.sendUserMessage(params);
         } catch (err) {
             // Handle error.
             console.log("err :", err);
@@ -143,7 +144,7 @@ const ChatPage = () => {
                 h='calc(100vh - 60px)'
             >
                 <ChatHeader sender={sender}/>
-                <ChatMessageList sendbirdUserId={sendBirdUserId} messages={chatMessages}/>
+                <ChatMessageList userId={userId} messages={chatMessages}/>
                 <ChatForm onSendMessage={sendMessage}/>
             </Flex>
         </>

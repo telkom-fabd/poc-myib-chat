@@ -2,11 +2,11 @@ import moment from "moment";
 import PropTypes from "prop-types";
 import {Flex, Text} from "@chakra-ui/react";
 
-const ChatMessage = ({sendbirdUserId, message}) => {
-    if (!sendbirdUserId || sendbirdUserId === '') return null;
+const ChatMessage = ({userId, message}) => {
+    if (!userId || userId === '') return null;
 
     const createdAt = moment(message.createdAt).fromNow();
-    const isMyMessage = sendbirdUserId === message.sender.id;
+    const isMyMessage = userId === message.sender.id;
     if (isMyMessage) {
         return (
             <Flex
@@ -87,7 +87,7 @@ const ChatMessage = ({sendbirdUserId, message}) => {
 }
 
 ChatMessage.propTypes = {
-    sendbirdUserId: PropTypes.string,
+    userId: PropTypes.string,
     message: PropTypes.shape({
         id: PropTypes.number.isRequired,
         content: PropTypes.string.isRequired,

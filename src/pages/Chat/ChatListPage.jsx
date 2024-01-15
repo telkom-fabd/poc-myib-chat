@@ -78,10 +78,23 @@ const ChatListPage = () => {
                     });
                 }
 
+                let lastMessage = null;
+                if (channel.lastMessage) {
+                    lastMessage = {
+                        content: channel.lastMessage.message,
+                        createdAt: channel.lastMessage.createdAt,
+                        sender: {
+                            userId: channel.lastMessage.sender.userId,
+                            avatar: channel.lastMessage.sender.plainProfileUrl,
+                            name: channel.lastMessage.sender.nickname,
+                        },
+                    };
+                }
+
                 return {
                     url: channel._url,
                     members: members,
-                    lastMessage: channel.lastMessage,
+                    lastMessage: lastMessage,
                     createdAt: channel.createdAt,
                 };
             })

@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import {Flex} from "@chakra-ui/react";
 import ChatMessage from "./ChatMessage.jsx";
 
-const ChatMessageList = ({sendbirdUserId, messages}) => {
+const ChatMessageList = ({userId, messages}) => {
     return (
         <Flex
             flexDir='column'
@@ -17,7 +17,7 @@ const ChatMessageList = ({sendbirdUserId, messages}) => {
                 messages.map((msg, index) => (
                     <ChatMessage
                         key={index}
-                        sendbirdUserId={sendbirdUserId}
+                        userId={userId}
                         message={msg}
                     />
                 ))
@@ -27,7 +27,7 @@ const ChatMessageList = ({sendbirdUserId, messages}) => {
 }
 
 ChatMessageList.propTypes = {
-    sendbirdUserId: PropTypes.string,
+    userId: PropTypes.string,
     messages: PropTypes.arrayOf(PropTypes.shape({
         id: PropTypes.number.isRequired,
         content: PropTypes.string.isRequired,
@@ -42,7 +42,7 @@ ChatMessageList.propTypes = {
 };
 
 ChatMessageList.defaultProps = {
-    sendbirdUserId: null,
+    userId: null,
     messages: [],
 }
 
