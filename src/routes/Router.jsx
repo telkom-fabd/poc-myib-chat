@@ -4,6 +4,7 @@ import LoginPage from "../pages/Auth/LoginPage.jsx";
 import RegisterPage from "../pages/Auth/RegisterPage.jsx";
 import AuthLayout from "../layouts/AuthLayout.jsx";
 import PrivateLayout from "../layouts/PrivateLayout.jsx";
+import ChatPage from "../pages/Chat/ChatPage.jsx";
 
 const AppRouter = () => {
     return (
@@ -21,6 +22,11 @@ const AppRouter = () => {
             <Route path="/chat" element={
                 <PrivateLayout>
                     <ChatListPage/>
+                </PrivateLayout>
+            }/>
+            <Route path="/chat/:channelUrl" element={
+                <PrivateLayout>
+                    <ChatPage/>
                 </PrivateLayout>
             }/>
         </Routes>

@@ -14,12 +14,24 @@ const saveUser = (user) => {
 
 const getUser = () => {
     const user = Cookies.get('user');
+    if (!user) return null;
     return JSON.parse(user);
+}
+
+const saveSendbird = (sendbird) => {
+    Cookies.set('sendbird', JSON.stringify(sendbird), {expires: 1});
+}
+
+const getSendbird = () => {
+    const sendbird = Cookies.get('sendbird');
+    if (!sendbird) return null;
+    return JSON.parse(sendbird);
 }
 
 const destroyCookies = () => {
     Cookies.remove('token');
     Cookies.remove('user');
+    Cookies.remove('sendbird');
 }
 
 export {
@@ -27,5 +39,7 @@ export {
     getToken,
     saveUser,
     getUser,
+    saveSendbird,
+    getSendbird,
     destroyCookies
 }
