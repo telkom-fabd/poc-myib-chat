@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import {useNavigate} from "react-router-dom";
-import {Box, Button, Card, CardBody, Flex, FormControl, FormLabel, Input} from "@chakra-ui/react";
+import {Box, Button, Card, CardBody, Flex, FormControl, FormLabel, Input, Text} from "@chakra-ui/react";
 import ModalError from "../../components/modal/ModalError.jsx";
 
 import * as authService from "../../services/auth";
@@ -76,6 +76,15 @@ const LoginPage = () => {
             <Box w='100%' p={8}>
                 <Card>
                     <CardBody>
+                        <Text
+                            fontSize='xl'
+                            fontWeight='600'
+                            textAlign='center'
+                            mb={3}
+                        >
+                            Customer MyIB
+                        </Text>
+
                         <Flex flexDirection='column' w='100%'>
                             <FormControl mb={4}>
                                 <FormLabel>Email</FormLabel>
