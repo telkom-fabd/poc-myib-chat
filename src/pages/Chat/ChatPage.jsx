@@ -47,16 +47,19 @@ const ChatPage = () => {
             // set sender
             let senderName = '';
             let senderAvatar = '';
+            let senderIsOnline = false;
             if (channel.members && channel.members.length > 0) {
                 for (let i = 0; i < channel.members.length; i++) {
                     if (channel.members[i].userId !== user._id) {
                         senderName = channel.members[i].nickname;
                         senderAvatar = channel.members[i].plainProfileUrl;
+                        senderIsOnline = channel.members[i].connectionStatus === 'online';
                         break;
                     }
                 }
             }
             setSender({
+                isOnline: senderIsOnline,
                 avatar: senderAvatar,
                 name: senderName,
             })

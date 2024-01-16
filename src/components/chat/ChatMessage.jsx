@@ -1,6 +1,7 @@
 import moment from "moment";
 import PropTypes from "prop-types";
 import {Flex, Text} from "@chakra-ui/react";
+import {RiCheckDoubleFill, RiCheckFill} from "react-icons/ri";
 
 const ChatMessage = ({userId, message}) => {
     if (!userId || userId === '') return null;
@@ -8,6 +9,7 @@ const ChatMessage = ({userId, message}) => {
     const createdAt = moment(message.createdAt).fromNow();
     const isMyMessage = userId === message.sender.id;
     if (isMyMessage) {
+        const isSent = message.sendingStatus === 'succeeded';
         return (
             <Flex
                 w='100%'
@@ -34,14 +36,28 @@ const ChatMessage = ({userId, message}) => {
                         {message.content}
                     </Text>
 
-                    <Text
-                        fontSize='9px'
-                        fontWeight='400'
-                        textAlign='right'
-                        color='rgba(0,0,0,0.6)'
+                    <Flex
+                        flexDir='row'
+                        justifyContent='end'
+                        alignItems='center'
+                        gap={2}
                     >
-                        {createdAt}
-                    </Text>
+                        <Text
+                            fontSize='9px'
+                            fontWeight='400'
+                            textAlign='right'
+                            color='rgba(0,0,0,0.6)'
+                        >
+                            {createdAt}
+                        </Text>
+
+                        {
+                            isSent
+                                ? <RiCheckDoubleFill color='green'/>
+                                : <RiCheckFill color='gray'/>
+                        }
+
+                    </Flex>
                 </Flex>
             </Flex>
         )
